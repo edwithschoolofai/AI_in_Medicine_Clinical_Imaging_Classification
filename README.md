@@ -1,23 +1,22 @@
 # EyeNet
 
-## Overview
+## 개요
+ 
+Siraj Raval의 의학 분류에 관한 유튜브 강의(https://youtu.be/DCcmFXXAHf4)를 위한 코드입니다.
 
-This is the code for [this](https://youtu.be/DCcmFXXAHf4) video on Youtube by Siraj Raval on medical classification. 
+## 딥러닝을 활용한 당뇨병성 망막증 진단
 
-## Detecting Diabetic Retinopathy With Deep Learning
+## 목표
 
-## Objective
+당뇨병성 망막증은 선진국 노동 인구의 실명을 유발하는 가장 큰 원인입니다. 9,300만 명 이상에게 영향을 끼치는 것으로 추산됩니다.
 
-Diabetic retinopathy is the leading cause of blindness in the working-age population of the developed world. The condition is estimated to affect over 93 million people.
+정확하고 자동화된 당뇨병성 망막증 진단의 필요성은 지속적으로 논의되었으며, 사진 분류와 패턴 인식, 그리고 머신러닝을 이용한 이전 시도가 좋은 발전을 만들었습니다. 목표는 안구 사진을 입력값으로 받아 실제 진단에 사용될 가능성을 가진 새로운 모델을 만들어내는 것입니다.
 
-The need for a comprehensive and automated method of diabetic retinopathy screening has long been recognized, and previous efforts have made good progress using image classification, pattern recognition, and machine learning. With photos of eyes as input, the goal of this capstone is to create a new model, ideally resulting in realistic clinical potential.
+본 프로젝트의 동기는 두 가지입니다:
 
-The motivations for this project are twofold:
+* 사진 분류는 빅데이터 분류와 더불어 몇 년간 유망 분야였습니다.
 
-* Image classification has been a personal interest for years, in addition to classification
-on a large scale data set.
-
-* Time is lost between patients getting their eyes scanned (shown below), having their images analyzed by doctors, and scheduling a follow-up appointment. By processing images in real-time, EyeNet would allow people to seek & schedule treatment the same day.
+* 환자들이 안구 사진을 스캔하고, 의사들에게 진단받고, 다음 약속을 잡는 데 많은 시간이 낭비됩니다. 실시간으로 사진을 처리함으로써, EyeNet은 사람들이 진단과 예약을 같은 날에 할 수 있도록 할 것입니다.  
 
 
 <p align = "center">
@@ -25,43 +24,41 @@ on a large scale data set.
 </p>
 
 
-## Table of Contents
-1. [Data](#data)
-2. [Exploratory Data Analysis](#exploratory-data-analysis)
-3. [Preprocessing](#preprocessing)
-    * [Download Images to EC2](#download-all-images-to-ec2)
-    * [Crop & Resize Images](#crop-and-resize-all-images)
-    * [Rotate and Mirror All Images](#rotate-and-mirror-all-images)
-4. [CNN Architecture](#neural-network-architecture)
-5. [Results](#results)
-6. [Next Steps](#next-steps)
-7. [References](#references)
-
-## Data
-
-The data originates from a [2015 Kaggle competition](https://www.kaggle.com/c/diabetic-retinopathy-detection). However, is an atypical Kaggle dataset. In most Kaggle competitions, the data has already been cleaned, giving the data scientist very little to preprocess. With this dataset, this isn't the case.
-
-All images are taken of different people, using different cameras, and of different sizes. Pertaining to the [preprocessing](#preprocessing) section, this data is extremely noisy, and requires multiple preprocessing steps to get all images to a useable format for training a model.
-
-The training data is comprised of 35,126 images, which are augmented during preprocessing.
+## 목차
+1. [데이터](#데이터)
+2. [예비 데이터 분석](#예비-데이터-분석)
+3. [전처리](#전처리)
+    * [EC2로 사진 저장](#EC2로-사진-저장)
+    * [사진 자르기 & 크기 변경](#사진-자르기-및-크기-변경)
+    * [사진 회전 및 반전](#사진-회전-및-반전)
+4. [CNN 설계](#CNN-설계)
+5. [결과](#결과)
+6. [다음 단계](#다음-단계)
+7. [참고 문헌](#참고-문헌)
 
 
-## Exploratory Data Analysis
+## 데이터
 
-The very first item analyzed was the training labels. While there are
-five categories to predict against, the plot below shows the severe class imbalance in the original dataset.
+데이터는 [2015 Kaggle competition](https://www.kaggle.com/c/diabetic-retinopathy-detection)에서 가져왔습니다. 하지만 이는 대표적인 Kaggle 데이터의 예시가 아닙니다. 대부분의 Kaggle competition에서는 데이터가 이미 정리되어 있어, 데이터 과학자들이 전처리 할 부분이 거의 없습니다. 이 데이터는 예외입니다. 
+
+모든 사진은 제각기 다른 사람으로부터 다른 카메라를 사용하였으며 다른 크기입니다. [전처리](#전처리) 부분에 관하여, 이 데이터는 아주 노이즈가 많으며 모든 사진을 모델 학습에 사용 가능한 형태로 만들기 위해서는 여러 단계의 전처리 과정을 거쳐야 합니다.
+
+학습 데이터는 35,126의 사진으로 이루어져 있으며, 전처리 과정 중에 늘어납니다.
+
+
+## 예비 데이터 분석
+
+가장 처음으로 분석할 것은 학습 레이블입니다. 예측해야 할 범주는 5개인데 반해, 아래 그래프는 원래 데이터에 각 범주 간 심각한 불균형이 있음을 보여줍니다.
 
 <p align = "center">
 <img align="center" src="images/eda/DR_vs_Frequency_tableau.png" alt="EDA - Class Imbalance" height="458" width="736" />
 </p>
 
-Of the original training data, 25,810 images are classified as not having retinopathy,
-while 9,316 are classified as having retinopathy.
+원래 학습 데이터에서, 25,810장의 사진은 망막증을 가지지 않은 것으로 분류된 반면, 9,316장은 망막증을 가진 것으로 분류되었습니다. 
 
-Due to the class imbalance, steps taken during [preprocessing](#preprocessing) in order to rectify the imbalance, and when training the model.
+이 범주 간 불균형 때문에, 모델을 학습시키기 위해서는 [전처리] 과정에서 불균형을 수정하기 위한 단계가 필요합니다.
 
-Furthermore, the variance between images of the eyes is extremely high. The first two rows of images
-show class 0 (no retinopathy); the second two rows show class 4 (proliferative retinopathy).
+또한, 안구 사진 간 분산이 너무 높습니다. 첫 두 줄의 사진은 class 0(망막증 없음)이고, 다음 두 줄은 class 4(증식성 망막증)입니다. 
 
 
 <p align = "center">
@@ -74,68 +71,52 @@ show class 0 (no retinopathy); the second two rows show class 4 (proliferative r
 
 
 
-## Preprocessing
+## 전처리
 
-The preprocessing pipeline is the following:
+전처리 과정은 다음과 같습니다:
 
-1. Download all images to EC2 using the [download script](src/download_data.sh).
-2. Crop & resize all images using the [resizing script](src/resize_images.py) and the [preprocessing script](src/preprocess_images.py).
-3. Rotate & mirror all images using the [rotation script](src/rotate_images.py).
-4. Convert all images to array of NumPy arrays, using the [conversion script](src/image_to_array.py).
 
-### Download All Images to EC2
-The images were downloaded using the Kaggle CLI. Running this on an EC2 instance
-allows you to download the images in about 30 minutes. All images are then placed
-in their respective folders, and expanded from their compressed files. In total,
-the original dataset totals 35 gigabytes.
+1. [download script](src/download_data.sh)를 이용하여 모든 사진을 EC2로 저장합니다.
+2. [resizing script](src/resize_images.py)와 [preprocessing script](src/preprocess_images.py)를 이용하여 모든 사진을 자르고 크기를 변경합니다.
+3. [rotation script](src/rotate_images.py)를 이용하여 모든 사진을 회전하고 반전시킵니다.
+4. [conversion script](src/image_to_array.py)를 이용하여 모든 사진을 NumPy 배열로 변환합니다.
 
-### Crop and Resize All Images
-All images were scaled down to 256 by 256. Despite taking longer to train, the
-detail present in photos of this size is much greater then at 128 by 128.
+### EC2로 사진 저장
+사진들은 Kaggle CLI를 통해 저장됩니다. EC2에서 이를 실행하면 사진을 모두 저장하는 데 30분 정도 걸릴 것입니다. 그럼 모든 사진들이 각자의 폴더에 저장될 것이고, 압축이 해제될 것입니다. 데이터는 모두 합쳐 총 35 GB 입니다.
 
-Additionally, 403 images were dropped from the training set. Scikit-Image raised
-multiple warnings during resizing, due to these images having no color space.
-Because of this, any images that were completely black were removed from the
-training data.
+### 사진 자르기 및 크기 변경
+모든 사진들은 256 * 256으로 조정되어 있습니다. 학습에 오래 걸리더라도, 128 * 128보다 이 크기의 사진에 더욱 자세한 정보가 많습니다.
 
-### Rotate and Mirror All Images
-All images were rotated and mirrored.Images without retinopathy were mirrored;
-images that had retinopathy were mirrored, and rotated 90, 120, 180, and 270
-degrees.
+추가적으로, 403장의 사진이 학습 세트에서 사라집니다. 이 사진들은 색 공간이 없어 Scikit-Image가 크기 변경 과정에서 경고한 사진들입니다. 이 때문에, 완전히 검은색인 사진은 학습 데이터에서 제거됩니다. 
 
-The first images show two pairs of eyes, along with the black borders. Notice in
-the cropping and rotations how the majority of noise is removed.
+### 사진 회전 및 반전
+모든 사진은 회전 및 반전되어있습니다. 망막증이 없는 사진은 반전되어 있고, 망막증이 있는 사진은 반전 및 90도, 120도, 180도, 그리고 270도 회전되어있습니다.
+
+첫 사진은 검은 경계를 따라 두 쌍의 눈을 보여줍니다. 사진 자르기와 회전이 어떻게 대부분의 노이즈를 제거하는지 주목하세요.
 
 ![Unscaled Images](images/readme/sample_images_unscaled.jpg)
 ![Rotated Images](images/readme/17_left_horizontal_white.jpg)
 
-After rotations and mirroring, the class imbalance is rectified, with a few thousand
-more images having retinopathy. In total, there are 106,386 images being processed
-by the neural network.
+회전과 반전이 끝나면, 망막증을 가진 사진이 몇 천장 더 많은 정도로 범주 간 불균형이 수정됩니다. 총합 106,386장의 사진이 신경망에 의해 처리됩니다.
 
 
 <p align = "center">
 <img align="center" src="images/eda/DR_vs_frequency_balanced.png" alt="EDA - Corrected Class Imbalance" width="664" height="458" />
 </p>
 
-## Neural Network Architecture
+## CNN 설계
 
-The model is built using Keras, utilizing TensorFlow as the backend.
-TensorFlow was chosen as the backend due to better performance over
-Theano, and the ability to visualize the neural network using TensorBoard.
+모델은 Keras를 사용하여 설계되었으며, 텐서플로를 후부에서 사용합니다.
+텐서플로는 Theano보다 더 성능이 좋고 TensorBoard를 이용하여 신경망을 시각화하는 능력이 더 뛰어납니다. 
 
-For predicting two categories, EyeNet utilizes three convolutional layers,
-each having a depth of 32. A Max Pooling layer is applied after all three
-convolutional layers with size (2,2).
+두 범주를 예측하기 위하여 EyeNet은 3개의 합성곱 신경망을 사용하며, 각각 32의 깊이를 가지고 있습니다. 
 
-After pooling, the data is fed through a single dense layer of size 128,
-and finally to the output layer, consisting of 2 softmax nodes.
+풀링이 끝나면, 데이터는 크기 128의 단일 고밀도 층에 입력되고 2개의 소프트맥스 노드를 가진 출력망으로 이동합니다.
 
 ![TensorBoard CNN](images/readme/cnn_two_classes_tensorboard.png)
 
-## Results
-The EyeNet classifier was created to determine if a patient has retinopathy. The current model returns the following scores.
-
+## 결과
+EyeNet 분류기는 환자가 망막증을 가졌는지를 판단하기 위해 만들어졌습니다. 현 모델은 다음과 같은 결과를 출력합니다.
 
 | Metric | Value |
 | :-----: | :-----: |
@@ -145,28 +126,17 @@ The EyeNet classifier was created to determine if a patient has retinopathy. The
 | Recall | 77% |
 
 
-So, why does the neural network perform this way? Besides the class imbalance,
-the cropping is definitely helping in the network's performance. By not having
-extra black parts in the images, the network is able to process only the eye
-itself.
+그래서, 신경망은 왜 이와 같이 작동하는 것일까요? 범주 간 불균형 외에, 사진 자르기가 신경망의 성능에 아주 큰 도움을 줍니다. 사진 내에 검은 부분이 없기 때문에 신경망이 안구 자체만을 처리할 수 있습니다. 
 
-## Next Steps
-1. Program the neural network to retrain with new photos. This is a common practice,
-and only serves to optimize the model. Checks would be put in place to validate the
-images before being added to the classifier, in order to prevent low quality images
-from altering the classifier too drastically.
+## 다음 단계
+1. 새로운 사진들로 재학습시키기 위해 신경망을 계획합니다. 이는 흔한 과정이며, 모델을 최적화하기 위해 사용됩니다. 저품질 사진들이 분류기를 지나치게 바꾸는 것을 방지하기 위해 사진들이 분류기에 입력되기 전에 검사할 수 있습니다.
+
+2. Keras 모델을 CoreML로 바꾸고, EyeNet iOS 어플을 만듭니다. CoreML은 애플이 만든 프레임워크로 iOS 장치에 머신러닝을 추가합니다. 이는 파이썬 개발자들로 하여금 그들의 모델을 '.mlmodel' 파일로 변환하여 iOS 개발 사이클에 추가할 수 있도록 합니다. 
+
+또한, 이 모델은 로컬 장치에서 분류를 수행할 수도 있습니다. 어플이 실행되기 위해서 별도의 인터넷 연결이 필요하지 않습니다. 이 때문에, 원격으로 EyeNet을 사용하는 것이 아주 쉬워집니다. 
 
 
-2. Port the Keras model to CoreML, and deploy to an EyeNet iOS application. CoreML
-is a framework designed by Apple for adding machine learning to iOS devices.
-This allows the ability of Python developers to export their models, convert the
-file to a `.mlmodel` file, and add the file to the iOS development cycle.
-
-Furthermore, the model is able to perform classification on the local
-device. There is no need for an internet connection for the application to work. Because of this, the ability to use EyeNet in remote areas is further justified, and that much easier.
-
-
-## References
+## 참고 문헌
 
 1. [What is Diabetic Retinopathy?](http://www.mayoclinic.org/diseases-conditions/diabetic-retinopathy/basics/definition/con-20023311)
 
@@ -178,5 +148,4 @@ device. There is no need for an internet connection for the application to work.
 <img align="center" src="images/tech_stack/tech_stack_banner.png" alt="tech_stack_banner"/>
 
 ## Credits
-
-The credits for this code go to [gregwchase](https://github.com/gregwchase/dsi-capstone). I've merely created a wrapper to get people started. 
+이 코드의 저작권은 [gregwchase](https://github.com/gregwchase/dsi-capstone)에게 있습니다. 저는 단지 사람들이 쉽게 배울 수 있도록 만들었을 뿐입니다.
