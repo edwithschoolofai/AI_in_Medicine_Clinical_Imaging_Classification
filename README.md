@@ -1,13 +1,14 @@
 # EyeNet
 
-## 개요
+## Overview
 
-다음은 유튜버 Siraj Raval의 의학 진단에 관한 [이 동영상](https://youtu.be/DCcmFXXAHf4)에 관련된 코드입니다.
-## 딥러닝으로 당뇨망막변증 진단하기
+This is the code for [this](https://youtu.be/DCcmFXXAHf4) video on Youtube by Siraj Raval on medical classification. 
 
-## 목표
+## Detecting Diabetic Retinopathy With Deep Learning
 
-당뇨망막변증은 선진국 노동 인구에서 시력 소실을 야기하는 가장 큰 원인 중 하나입니다. 당뇨망막변증은 약 9300만명 이상에게 영향을 미치는 것으로 알려져 있습니다. 
+## Objective
+
+Diabetic retinopathy is the leading cause of blindness in the working-age population of the developed world. The condition is estimated to affect over 93 million people.
 
 The need for a comprehensive and automated method of diabetic retinopathy screening has long been recognized, and previous efforts have made good progress using image classification, pattern recognition, and machine learning. With photos of eyes as input, the goal of this capstone is to create a new model, ideally resulting in realistic clinical potential.
 
